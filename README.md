@@ -1,4 +1,4 @@
-# Polling Party Location Tracking System
+# Election Live Tracker 
 
 This Node.js server application provides real-time location tracking for polling parties. Polling parties use the index.html interface to select their destination polling station, and their locations are automatically sent every minute. The internal team can view the dashboard.html for tracking purposes.
 
@@ -13,18 +13,18 @@ This Node.js server application provides real-time location tracking for polling
 
 Election Team Tracker is a simple web application designed to streamline the mustering process during elections. Polling parties can select their polling stations and share their GPS location in real-time. The Election Team can then track the process of mustering via an interactive dashboard.
 
-![MusteringTracker](https://i.imgur.com/XqqDYyz.png)
+![MusteringTracker](https://i.imgur.com/4vSeaHZ.png)
 
 
 ## Usage
 
 - **Polling Station Selection**: Polling parties can easily select their assigned polling stations from a dropdown menu.
   
-![Polling Station Selection](https://i.imgur.com/NQeNm3B.png)
+![Polling Station Selection](https://i.imgur.com/wMnjfw4.png)
 
 - **Real-time GPS Sharing**: Polling parties can share their GPS location in real-time with the Election Team, ensuring transparency and efficiency in the mustering process.
 
-![Real-time GPS Sharing](https://i.imgur.com/yBZzrRA.png)
+![Real-time GPS Sharing](https://i.imgur.com/imD4Yv2.png)
 
 ## Usage
 
