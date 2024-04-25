@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Location Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+    }
+    select, button {
+      font-size: 16px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    button {
+      background-color: #007bff;
+      color: #fff;
+      cursor: pointer;
+    }
+    button.confirm-btn {
+      background-color: #28a745;
+    }
+    button.confirm-btn, button#startButton {
+      display: none;
+    }
+    .confirm-message {
+      margin-bottom: 20px;
+    }
+  </style></head>
+<body>
+   <div class="confirm-message">
+    <p>Press 'Confirm' to start tracking the selected PS location:</p>
+    <button id="confirmButton">Confirm</button>
+  </div>
+
+
+  <label for="psSelect">Select PS:</label>
+  <select id="psSelect">
+<option value="1">PS 1: GOVERNMENT LOWER PRIMARY SCHOOL,HARAVE (Kallahalli)</option>
+<option value="2">PS 2: Govt Higher Primary school Ramenahalli</option>
+<option value="3">PS 3: Govt Higher Primary School (East wing) Harave</option>
+<option value="4">PS 4: Govt Higher Primary Schol (West Division) Harave</option>
+
+  </select>
+  <button id="startButton">Start Tracking </button>
+    <p class="message" id="statusMessage"></p>
+
+    
+   <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const confirmButton = document.getElementById("confirmButton");
+      const startButton = document.getElementById("startButton");
+      const psSelect = document.getElementById("psSelect");
+      const statusMessage = document.getElementById("statusMessage");
+
+      confirmButton.addEventListener("click", function() {
+        confirmButton.style.display = "none"; // Hide confirm button
+        startButton.style.display = "inline-block"; // Show start button
+      });
+
+      startButton.addEventListener("click", function() {
+        statusMessage.textContent = "Election Team tracking your location, Don't close...";
+
+        sendLocation();
+
+        setInterval(sendLocation, 60000); // Send location every 1 minute
+      });
+
+      function sendLocation() {
+        const psValue = psSelect.value;
+
+        if ("geolocation" in navigator) {
+          navigator.geolocation.getCurrentPosition(function(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            
+            const locationData = {
+              PSnum: psValue,
+              current_location: {
+                type: "Point",
+                coordinates: [latitude, longitude]
+              }
+            };
+
+            sendToServer(locationData);
+          }, showError);
+        } else {
+          alert("Geolocation is not supported by this browser.");
+        }
+      }
+
+      function sendToServer(locationData) {
+        fetch("/saveLocation", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(locationData)
+        })
+        .then(response => {
+          console.log("Location data sent successfully.");
+        })
+        .catch(error => {
+          console.error("Error sending location data:", error);
+        });
+      }
+
+      function showError(error) {
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            alert("User denied the request for Geolocation.");
+            break;
+          case error.POSITION_UNAVAILABLE:
+            alert("Location information is unavailable.");
+            break;
+          case error.TIMEOUT:
+            alert("The request to get user location timed out.");
+            break;
+          case error.UNKNOWN_ERROR:
+            alert("An unknown error occurred.");
+            break;
+        }
+      }
+    });
+  </script>
+</body>
+</html>
