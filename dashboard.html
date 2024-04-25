@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+
+  h1 {
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  #map {
+    height: 600px;
+    margin: 20px auto;
+  }
+
+  #status {
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  .status-box {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    display: inline-block;
+    margin-right: 10px;
+  }
+
+  .status-label {
+    font-weight: bold;
+  }
+
+  .huechange {
+    filter: hue-rotate(190deg);
+  }
+</style>
+</head>
+<body>
+  <h1>212 Hunsur - Mustering Live Location Dashboard</h1>
+  <div id="map"></div>
+  <div id="status">
+    <div class="status-box">
+      <p class="status-label">Total PS:</p>
+      <p id="totalPS">0</p>
+    </div>
+    <div class="status-box">
+      <p class="status-label">Reached PS:</p>
+      <p id="reachedPS">0</p>
+    </div>
+    <div class="status-box">
+      <p class="status-label">Not Reached PS:</p>
+      <p id="notReachedPS">0</p>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      var map = L.map('map').setView([12.248872, 76.268085], 11); // set view anywhere.
+      var totalPS = 4; //how many total Polling parties.
+      var reachedPS = 0;
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+
+      function fetchAndDisplayLocations() {
+        fetch("/dashboard2")
+          .then(response => response.json())
+          .then(data => {
+            data.forEach(location => {
+              var coordinates = location.current_location.split(',');
+              var latlng = [parseFloat(coordinates[0]), parseFloat(coordinates[1])];
+              var markerColor = 'green'; // Default color
+              var temp = latlng[0];
+              if (latlng[0] > latlng[1]) {
+                temp = latlng[0];
+                latlng[0] = latlng[1];
+                latlng[1] = temp;
+              }
+
+              // Calculate distance between current_location and PS_location
+              var PS_coordinates = [parseFloat(location.PS_location.split(',')[0]), parseFloat(location.PS_location.split(',')[1])];
+              var distance = L.latLng(latlng).distanceTo(PS_coordinates);
+
+              // If within 500 meters, change color to green
+              if (distance >= 500) {
+                markerColor = 'red';
+              }
+
+              if (markerColor === 'green') {
+                reachedPS++;
+              }
+
+              var marker = L.marker(latlng).addTo(map);
+              if (markerColor === 'red') {
+                marker._icon.style.filter = "hue-rotate(120deg)";
+              }
+
+              marker.bindPopup('PS ' + location.PSnum + '<br>Name: ' + location.Psname + '<br>Location: ' + latlng + '<br>Distance: ' + distance).openPopup();
+            });
+
+            // Update status
+            document.getElementById('totalPS').textContent = totalPS;
+            document.getElementById('reachedPS').textContent = reachedPS;
+            document.getElementById('notReachedPS').textContent = totalPS - reachedPS;
+          })
+          .catch(error => console.error('Error fetching PS locations:', error));
+      }
+
+      // Fetch and display PS locations every minute
+      fetchAndDisplayLocations();
+      setInterval(fetchAndDisplayLocations, 60000); // 1 minute in milliseconds
+    });
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+
+  h1 {
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  #map {
+    height: 600px;
+    margin: 20px auto;
+  }
+
+  #status {
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  .status-box {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    display: inline-block;
+    margin-right: 10px;
+  }
+
+  .status-label {
+    font-weight: bold;
+  }
+
+  .huechange {
+    filter: hue-rotate(190deg);
+  }
+</style>
+</head>
+<body>
+  <h1>Mustering Live Location Dashboard</h1>
+  <div id="map"></div>
+  <div id="status">
+    <div class="status-box">
+      <p class="status-label">Total PS:</p>
+      <p id="totalPS">0</p>
+    </div>
+    <div class="status-box">
+      <p class="status-label">Reached PS:</p>
+      <p id="reachedPS">0</p>
+    </div>
+    <div class="status-box">
+      <p class="status-label">Not Reached PS:</p>
+      <p id="notReachedPS">0</p>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      var map = L.map('map').setView([12.248872, 76.268085], 11);
+      var totalPS = 4;
+      var reachedPS = 0;
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+
+      function fetchAndDisplayLocations() {
+        fetch("/dashboard2")
+          .then(response => response.json())
+          .then(data => {
+            data.forEach(location => {
+              var coordinates = location.current_location.split(',');
+              var latlng = [parseFloat(coordinates[0]), parseFloat(coordinates[1])];
+              var markerColor = 'green'; // Default color
+              var temp = latlng[0];
+              if (latlng[0] > latlng[1]) {
+                temp = latlng[0];
+                latlng[0] = latlng[1];
+                latlng[1] = temp;
+              }
+
+              // Calculate distance between current_location and PS_location
+              var PS_coordinates = [parseFloat(location.PS_location.split(',')[0]), parseFloat(location.PS_location.split(',')[1])];
+              var distance = L.latLng(latlng).distanceTo(PS_coordinates);
+
+              // If within 500 meters, change color to green
+              if (distance >= 500) {
+                markerColor = 'red';
+              }
+
+              if (markerColor === 'green') {
+                reachedPS++;
+              }
+
+              var marker = L.marker(latlng).addTo(map);
+              if (markerColor === 'red') {
+                marker._icon.style.filter = "hue-rotate(120deg)";
+              }
+
+              marker.bindPopup('PS ' + location.PSnum + '<br>Name: ' + location.Psname + '<br>Location: ' + latlng + '<br>Distance: ' + distance).openPopup();
+            });
+
+            // Update status
+            document.getElementById('totalPS').textContent = totalPS;
+            document.getElementById('reachedPS').textContent = reachedPS;
+            document.getElementById('notReachedPS').textContent = totalPS - reachedPS;
+          })
+          .catch(error => console.error('Error fetching PS locations:', error));
+      }
+
+      // Fetch and display PS locations every minute
+      fetchAndDisplayLocations();
+      setInterval(fetchAndDisplayLocations, 60000); // 1 minute in milliseconds
+    });
+  </script>
+</body>
+</html>
